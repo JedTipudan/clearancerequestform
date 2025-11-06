@@ -12,7 +12,7 @@ for filter
 https://codeshare.io/GAmjlx
 
 
-follow this steps for the jcomboBox activity ______
+follow this steps for the jcomboBox activity
 ___
 ____
 _____
