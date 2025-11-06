@@ -8,7 +8,7 @@ or if you don`t get it then click this link for faster copy the code and paste i
 https://pastecode.dev/s/yyg39cvs
 
 acadyearcmbbx2.addActionListener(e -> filterClearanceRequest());
-add this first on line 29
+under initComponents
 
 then paste this on the first sem second sem on the top then paste this
 filterClearanceRequest();
