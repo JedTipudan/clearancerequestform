@@ -12,7 +12,15 @@ for filter
 https://codeshare.io/GAmjlx
 
 
-follow this steps for the jcomboBox activity
+follow this steps for the jcomboBox activity - - --- - - -          ___________________________________________________
+___
+____
+_____
+___
+Paste this code on the cleareance request sql on database
+__
+__
+
 SELECT *, concat(t1.acadyear,'-',t1.semester) as aysem FROM clearancerequest as t1 LEFT JOIN clearancestatus as t2 ON t1.clearancerequestID=t2.clearancerequestID JOIN clearingoffices as t3 ON t3.clearingofficesID=t2.clearingofficesID where t1.studentID=2 GROUP BY aysem;
 <img width="1920" height="1200" alt="{950EEFF6-1B60-468F-B8A6-402F4425B71E}" src="https://github.com/user-attachments/assets/ef339075-154b-4d94-bbd4-5de41c174cbc" />
 
