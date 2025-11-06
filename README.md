@@ -7,6 +7,11 @@ after you paste then you get error then your database have some issue if it you 
 or if you don`t get it then click this link for faster copy the code and paste it to your output
 https://pastecode.dev/s/yyg39cvs
 
+
+
+
+for filterdata
+
 acadyearcmbbx2.addActionListener(e -> filterClearanceRequest());
 under initComponents
 
