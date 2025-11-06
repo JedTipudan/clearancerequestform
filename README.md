@@ -18,7 +18,7 @@ under initComponents
 then paste this on the first sem second sem on the top then paste this
 filterClearanceRequest();
 
-then put this under the clearfields
+then put this above the clearfields
 private void filterClearanceRequest() {
     String selectedYear = acadyearcmbbx2.getSelectedItem().toString();
     String selectedSem = "";
