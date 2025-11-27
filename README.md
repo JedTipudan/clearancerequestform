@@ -1,64 +1,247 @@
-right click Submit Request Events mouse submitrequestbtnMouseClicked
-then copy the code on clearancerequestform.java you see on there
+✅ DETAILED EXPLANATION WITH CODE + WHAT THAT CODE IS (parameter, condition, query, renderer, etc.)
+🟦 1. Database Connection
+try (Connection conn = DBConnection.getConnection()) {
 
 
-after you paste then you get error then your database have some issue if it you can manually fix it or use AI its up to you now good luck and have fun
+→ TYPE: database connection initializer (resource block)
+→ PURPOSE: Opens a connection to the MySQL database.
 
-or if you don`t get it then click this link for faster copy the code and paste it to your output
-https://pastecode.dev/s/yyg39cvs
-
-for filter
-
-https://codeshare.io/GAmjlx
+🟦 2. Getting Filters From UI
+(A) Get selected academic year
+String selectedAY = (acadyearcmbbx2.getSelectedItem() != null) ? 
+                    acadyearcmbbx2.getSelectedItem().toString() : "";
 
 
-follow this steps for the jcomboBox activity
-___
-____
-_____
-___
-Paste this code on the cleareance request sql on database
-__
-__
+→ TYPE: condition + variable assignment
+→ PURPOSE:
 
-SELECT *, concat(t1.acadyear,'-',t1.semester) as aysem FROM clearancerequest as t1 LEFT JOIN clearancestatus as t2 ON t1.clearancerequestID=t2.clearancerequestID JOIN clearingoffices as t3 ON t3.clearingofficesID=t2.clearingofficesID where t1.studentID=2 GROUP BY aysem;
-<img width="1920" height="1200" alt="{950EEFF6-1B60-468F-B8A6-402F4425B71E}" src="https://github.com/user-attachments/assets/ef339075-154b-4d94-bbd4-5de41c174cbc" />
+If the combo box has a value → use it
 
-after procced to the next step
-paste the code or insert it see where i insert in on the photo
-<img width="1920" height="1200" alt="{0A4E3AC5-9C47-4699-BCC5-6EEFA512941E}" src="https://github.com/user-attachments/assets/6bedcd70-05b4-4dcf-9149-cae1be9487cf" />
+If not → use empty string
+This ensures the filter does not break.
 
-paste this code
+(B) Get selected semester
+String semester = "";
+if (firstsemrequestrdobtn1.isSelected()) semester = "First Sem";
+else if (secondsemrequestrdobtn1.isSelected()) semester = "Second Sem";
 
-    GetAYSem();  
-    
+
+→ TYPE: conditional statement
+→ PURPOSE:
+
+Checks which radio button is selected
+
+Assigns the correct semester text to the variable
+
+🟦 3. Building the SQL Query
+StringBuilder query = new StringBuilder(
+    "SELECT t3.clearingoffice, CONCAT(t1.acadyear,'-',t1.semester) AS aysem, " +
+    "t2.status, t2.remarks, t1.dateRequested " +
+    "FROM clearancerequest AS t1 " +
+    "LEFT JOIN clearancestatus AS t2 ON t1.clearancerequestID = t2.clearancerequestID " +
+    "JOIN clearingoffices AS t3 ON t3.clearingofficesID = t2.clearingofficesID " +
+    "WHERE t1.studentID = ?"
+);
+
+
+→ TYPE: SQL SELECT query (base query)
+→ PURPOSE:
+Retrieves:
+
+Clearing office name
+
+AY + Semester (combined)
+
+Status
+
+Remarks
+
+Date request
+
+→ Contains a parameter placeholder:
+? for studentID.
+
+🟦 4. Adding Filters (Dynamic SQL Conditions)
+Filter for Academic Year
+if (!"All".equals(selectedAY)) query.append(" AND t1.acadyear = ?");
+
+
+→ TYPE: condition + SQL filter + parameter placeholder
+→ PURPOSE:
+If AY is not "All", add a filter to the SQL query.
+
+Filter for Semester
+if (!semester.isEmpty()) query.append(" AND t1.semester = ?");
+
+
+→ TYPE: condition + SQL filter + parameter placeholder
+→ PURPOSE:
+If semester is selected, add another condition.
+
+Sorting
+query.append(" ORDER BY t1.dateRequested DESC;");
+
+
+→ TYPE: SQL order clause
+→ PURPOSE:
+Sort newest clearance requests first.
+
+🟦 5. Prepare SQL Statement and Set Parameters
+PreparedStatement pst = conn.prepareStatement(query.toString());
+int paramIndex = 1;
+
+
+→ TYPE: PreparedStatement creation
+→ PURPOSE:
+Allows safe insertion of parameters (?).
+
+Parameter 1 → studentID
+pst.setInt(paramIndex++, studentID);
+
+
+→ TYPE: parameter binding
+→ PURPOSE:
+Replaces the first ? in the SQL query with the student ID.
+
+Optional parameter → selectedAY
+if (!"All".equals(selectedAY)) pst.setString(paramIndex++, selectedAY);
+
+
+→ TYPE: conditional parameter binding
+→ PURPOSE:
+Only sets this parameter if the filter was applied.
+
+Optional parameter → semester
+if (!semester.isEmpty()) pst.setString(paramIndex++, semester);
+
+
+→ TYPE: conditional parameter binding
+→ PURPOSE:
+Adds semester parameter only if a semester is selected.
+
+🟦 6. Execute the Query
+ResultSet rs = pst.executeQuery();
+
+
+→ TYPE: SQL execution
+→ PURPOSE:
+Runs the query and returns matching records.
+
+🟦 7. Creating the Table Model
+DefaultTableModel model = new DefaultTableModel();
+model.addColumn("Clearing Offices");
+model.addColumn("Academic Year and Sem");
+model.addColumn("Status");
+model.addColumn("Remarks");
+model.addColumn("Date Requested");
+
+
+→ TYPE: table model setup
+→ PURPOSE:
+Defines column headers for the JTable.
+
+🟦 8. Filling the Table Model with Data
+boolean hasData = false;
+
+while (rs.next()) {
+    hasData = true;
+    model.addRow(new Object[]{
+        rs.getString("clearingoffice"),
+        rs.getString("aysem"),
+        rs.getString("status"),
+        rs.getString("remarks"),
+        rs.getString("dateRequested")
+    });
+}
+
+
+→ TYPE: loop + data extraction
+→ PURPOSE:
+
+Reads each row from the database
+
+Adds each row to the JTable model
+
+If no data found
+if (!hasData) {
+    model.addRow(new Object[]{"No data found", "", "", "", ""});
+}
+
+
+→ TYPE: condition
+→ PURPOSE:
+Shows a "No data found" placeholder row.
+
+🟦 9. Apply Model to JTable
+clearancestatusIDlbl.setModel(model);
+
+
+→ TYPE: table model assignment
+→ PURPOSE:
+Displays the loaded data in the UI.
+
+🟦 10. Apply Row Coloring (Renderer)
+clearancestatusIDlbl.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+
+
+→ TYPE: custom renderer
+→ PURPOSE:
+Allows changing row colors based on value.
+
+Renderer logic
+public Component getTableCellRendererComponent(JTable table, Object value,
+        boolean isSelected, boolean hasFocus, int row, int column) {
+
+
+→ TYPE: method override
+→ PURPOSE:
+Defines how each cell looks.
+
+Check status column (index 2)
+String status = table.getValueAt(row, 2) != null ? 
+                table.getValueAt(row, 2).toString() : "";
+
+
+→ TYPE: condition + value extraction
+→ PURPOSE:
+Gets the status of the current row.
+
+Apply row colors
+if (!isSelected) {
+    if (status.equalsIgnoreCase("Cleared")) {
+        c.setBackground(Color.GREEN);
+        c.setForeground(Color.BLACK);
+    } else {
+        c.setBackground(Color.WHITE);
+        c.setForeground(Color.BLACK);
     }
-    private void GetAYSem(){
-        try (Connection conn = DBConnection.getConnection()) {
-        String query = "SELECT concat(t1.acadyear,'-',t1.semester) as aysem FROM clearancerequest as "
-        + "t1 LEFT JOIN clearancestatus as t2 ON t1.clearancerequestID=t2.clearancerequestID "
-        + "JOIN clearingoffices as t3 ON t3.clearingofficesID=t2.clearingofficesID where t1.studentID=? GROUP BY aysem ORDER BY aysem DESC;";
-
-                PreparedStatement checkpst = conn.prepareStatement(query);
-                checkpst.setInt(1, studentID);
-                ResultSet rs = checkpst.executeQuery();
-
-                DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
-                JComboBox<String> comboBox = new JComboBox<>(model);
-
-                // Loop through the result set and add items to the comboBox model
-                while (rs.next()) {
-                    String aysem = rs.getString("aysem");
-                    model.addElement(aysem);
-                }
-
-                // If you want to set the model to a specific comboBox (acadyearcmbbx2)
-                acadyearcmbbx2.setModel(model);
-
-      }catch(SQLException ae){
-          
-      }
-    }
+}
 
 
+→ TYPE: conditional formatting (row coloring)
+→ PURPOSE:
 
+Cleared → GREEN
+
+Not cleared → WHITE
+
+This makes cleared records easy to identify.
+
+🟦 11. Close Resources
+rs.close();
+pst.close();
+
+
+→ TYPE: resource cleanup
+→ PURPOSE:
+Prevents memory leaks and improves performance.
+
+🟦 12. Error Handling
+} catch (SQLException ex) {
+    JOptionPane.showMessageDialog(this, "Error!", "Information", JOptionPane.WARNING_MESSAGE);
+}
+
+
+→ TYPE: exception handling
+→ PURPOSE:
+Displays a warning if something goes wrong.
